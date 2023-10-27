@@ -41,23 +41,9 @@ Namespace My
                 fichier_ban_dep = My.Settings.basedep
             End If
 
-            If My.Settings.commdep = "" Then
-                MsgBox("désignez le fichier communes du département", MsgBoxStyle.Information
-                   )
-                Dim f As New OpenFileDialog()
-                If f.ShowDialog = DialogResult.OK Then
-                    fichier_commune_dep = f.FileName
 
-                    My.Settings.commdep = fichier_commune_dep
-                Else
-                    MsgBox("impossible de travailler", MsgBoxStyle.Critical)
-
-                End If
-            Else
-                fichier_commune_dep = My.Settings.commdep
-            End If
             If My.Settings.traducteur = "" Then
-                MsgBox("désignez le fichier des typesde voies", MsgBoxStyle.Information
+                MsgBox("désignez le fichier des types de voies", MsgBoxStyle.Information
                    )
                 Dim f As New OpenFileDialog()
                 If f.ShowDialog = DialogResult.OK Then
@@ -70,8 +56,29 @@ Namespace My
                 End If
             Else
                 fichier_traduction = My.Settings.traducteur
+                W_traducteur = New traducteur(fichier_traduction)
+
+            End If
+
+            If My.Settings.fantoir = "" Then
+                MsgBox("désignez le fichier FANTOIR du département", MsgBoxStyle.Information
+                   )
+                Dim f As New OpenFileDialog()
+                If f.ShowDialog = DialogResult.OK Then
+                    fichier_fantoir = f.FileName
+
+                    My.Settings.fantoir = fichier_fantoir
+                Else
+                    MsgBox("impossible de travailler", MsgBoxStyle.Critical)
+
+                End If
+            Else
+                fichier_fantoir = My.Settings.fantoir
             End If
             My.Settings.Save()
+
+            listeCommune = New Liste_ComList(fichier_fantoir, Form1.DataGridView1)
+
         End Sub
     End Class
 End Namespace

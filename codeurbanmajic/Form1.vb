@@ -3,127 +3,14 @@
     Public ligneres(6) As String
     Public tabres() As Array
     Public insee As String
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-
-        Select Case DataGridView1.SelectedRows.Count
-            Case 0
-                MsgBox("Sélectionnez une commune", MsgBoxStyle.Information)
-                DataGridView1.ClearSelection()
-                Exit Sub
-            Case > 1
-                MsgBox("Une commune seulement", MsgBoxStyle.Exclamation)
-                DataGridView1.ClearSelection()
-                Exit Sub
-            Case 1
 
 
-                W_Commune = New commune(DataGridView1.SelectedRows.Item(0).Cells.Item(0).Value, DataGridView1.SelectedRows.Item(0).Cells.Item(1).Value)
-        End Select
-
-
-
-
-        source_ban = New IO.StreamReader(fichier_ban_dep)
-        ListeLignes = New System.Collections.Generic.List(Of Ligne_csv)
-
-        Dim s As String = ""
-
-
-        Using source_ban
-            source_ban.ReadLine()
-
-            Do While Not source_ban.EndOfStream
-
-                Dim ll As New Ligne_csv(source_ban.ReadLine)
-                If ll.Contenu(6) <> W_Commune.Insee Then
-
-                Else
-                    ListeLignes.Add(ll)
-                End If
-            Loop
-        End Using
-        Res_prelm = New System.Collections.Generic.List(Of GF3A_ligne)
-        For Each p As Ligne_csv In ListeLignes
-
-            Select Case p.Contenu.GetUpperBound(0)
-                Case 22
-                    If p.Contenu(22) <> "" Then
-
-                        Dim g As New GF3A_ligne(p.Contenu)
-                        Res_prelm.Add(g)
-                    End If
-            End Select
-        Next
-        Res_def = New System.Collections.Generic.List(Of GF3A_ligne)
-
-        For Each l As GF3A_ligne In Res_prelm
-            For Each n As GF3A_ligne In l.SplitRefCad
-                Res_def.Add(n)
-            Next
-        Next
-
-        Dim st(0) As String
-        Dim i As Integer = 0
-        Dim tradlst As New System.Collections.Generic.List(Of traducteur)
-        Using sr As New System.IO.StreamReader(fichier_traduction)
-
-            Do While Not sr.EndOfStream
-                Dim l() As String = sr.ReadLine.Split(";")
-                Dim foo As New traducteur(l(0), l(1))
-                tradlst.Add(foo)
-                ReDim Preserve st(i)
-                st(i) = l(0)
-                i = i + 1
-            Loop
-        End Using
-        Array.Sort(st)
-        For Each p As GF3A_ligne In Res_def
-            Dim tt() As String = p.Libelle.Split(" ")
-            Dim f As Integer = Array.BinarySearch(st, tt(0))
-            If f < 0 Then
-
-            Else
-                stringtofind = tt(0)
-                Dim tp As traducteur = tradlst.Find(AddressOf findtrad)
-                p.Nature = tp.Normale
-                If tp.Normale = tp.Locale Then
-                    p.Libelle = p.Libelle.Substring(tp.Normale.Length + 1)
-                End If
-            End If
-        Next
-        DataGridView2.DataSource = Res_def
-    End Sub
-    Private Function findtrad(s As traducteur) As Boolean
-        If s.Locale = stringtofind Then
-            Return True
-
-        Else
-            Return False
-
-        End If
-    End Function
     Private Sub Form1_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
         Label1.Text = "BAN Départementale : " & fichier_ban_dep
-        Label2.Text = "NOMS communes du département : " & fichier_commune_dep
+
         Label3.Text = "Fichier de traduction : " & fichier_traduction
+        Label4.Text = "Fichier FANTOIR : " & fichier_fantoir
 
-        listeCommune = New System.Collections.Generic.List(Of commune)
-        Dim l As String
-        Using sr As New System.IO.StreamReader(fichier_commune_dep)
-            Do While Not sr.EndOfStream
-                l = sr.ReadLine
-                Dim ll() As String = l.Split(";")
-                Dim c As New commune(ll(1), ll(0))
-                listeCommune.Add(c)
-            Loop
-        End Using
-
-        With DataGridView1
-            .DataSource = listeCommune
-            .AutoResizeColumn(0)
-            .AutoResizeColumn(1)
-            .ClearSelection()
-        End With
 
     End Sub
 
@@ -134,26 +21,218 @@
 
 
     Private Sub DataGridView1_SelectionChanged(sender As Object, e As EventArgs) Handles DataGridView1.SelectionChanged
-        If DataGridView1.SelectedRows.Count <> 1 Then
-            Exit Sub
-        Else
-            Res_def = New System.Collections.Generic.List(Of GF3A_ligne)
-            DataGridView2.DataSource = Res_def
-        End If
-    End Sub
 
+        If DataGridView1.DataSource Is Nothing Then
+            Exit Sub
+        End If
+
+        TabControl1.SelectedTab = TabPage1
+
+        Select Case DataGridView1.SelectedRows.Count
+            Case 0
+                Exit Sub
+            Case > 1
+                MsgBox("Séléctionnez une commune seulement", MsgBoxStyle.Exclamation)
+                DataGridView1.ClearSelection()
+                Exit Sub
+            Case 1
+                Dim lcom As comliste = TryCast(DataGridView1.SelectedRows(0).DataBoundItem, comliste)
+                InstancieCommune(lcom)
+
+        End Select
+
+
+
+
+    End Sub
+    Private Sub InstancieCommune(coml As comliste)
+        W_Commune = New commune(coml)
+        W_Commune.Liste_Adresse_BAN.Set_DataGrid(DataGrid_BAN)
+        W_Commune.Liste_Voie_FANTOIR.Set_DataGrid(DataGrid_FANTOIR)
+        ListBoxnomvoie.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Nom_Voie
+        ListBoxsourcenomvoie.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Source_Nom
+        ListBoxsourceposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Source_Position
+        ListBoxtypeposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Type_Position
+
+        ListBoxnomvoie.SelectedIndex = 0
+        ListBoxsourcenomvoie.SelectedIndex = 0
+        ListBoxsourceposition.SelectedIndex = 0
+        ListBoxtypeposition.SelectedIndex = 0
+    End Sub
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         SaveFileDialog1.FileName = "BANTOMAJIC_" & W_Commune.Insee
         If SaveFileDialog1.ShowDialog = DialogResult.OK Then
             Using wr As New System.IO.StreamWriter(SaveFileDialog1.FileName)
                 wr.WriteLine("CODE INSEE;NOMCOMM;REFCADPARC;NUMVOIE;INDREP;NATURE;LIBELLE")
-                For Each p As GF3A_ligne In Res_def
+                For Each p As GF3A_ligne In W_Commune.Liste_Adresse_BAN.To_GF3A(False, True)
                     Dim s As String = p.CodeInsee & ";" & p.Nom_Commune & ";" _
-& p.RefCad & ";" & p.NumVoie & ";" & ";" _
+& p.RefCad & ";" & p.NumVoie & ";" _
 & p.IndRep & ";" & p.Nature & ";" & p.Libelle
                     wr.WriteLine(s)
                 Next
             End Using
+            MsgBox("enregistrement effectué", MsgBoxStyle.Information)
         End If
+    End Sub
+
+
+
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        MsgBox("L'application se terminera vous devrez redémarrer", MsgBoxStyle.Critical)
+        My.Settings.fantoir = ""
+        My.Settings.basedep = ""
+        My.Settings.traducteur = ""
+
+        My.Settings.Save()
+        Me.Close()
+    End Sub
+
+
+
+    Private Sub TabControl1_Selected(sender As Object, e As TabControlEventArgs) Handles TabControl1.Selected
+        Select Case e.TabPage.Name
+            Case TabPage2.Name
+
+            Case TabPage3.Name
+                DataGrid_gf3a.DataSource = W_Commune.Liste_Adresse_BAN.To_GF3A
+        End Select
+
+
+    End Sub
+
+
+    Private Sub RadioButton1_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButton1.CheckedChanged
+        GF3A_checked_changed()
+    End Sub
+    Private Sub GF3A_checked_changed()
+        If RadioButton1.Checked Then
+            If CheckBox1.Checked Then
+                DataGrid_gf3a.DataSource = W_Commune.Liste_Adresse_BAN.To_GF3A(True, True)
+            Else
+                DataGrid_gf3a.DataSource = W_Commune.Liste_Adresse_BAN.To_GF3A(True, False)
+            End If
+        Else
+            If CheckBox1.Checked Then
+                DataGrid_gf3a.DataSource = W_Commune.Liste_Adresse_BAN.To_GF3A(False, True)
+            Else
+                DataGrid_gf3a.DataSource = W_Commune.Liste_Adresse_BAN.To_GF3A(False, False)
+            End If
+        End If
+    End Sub
+    Private Sub TabPage3_Click(sender As Object, e As EventArgs) Handles TabPage3.Click
+
+    End Sub
+
+    Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
+        GF3A_checked_changed()
+    End Sub
+
+    Private Sub ModeAdresse_CheckedChanged(sender As Object, e As EventArgs) Handles ModeAdresse.CheckedChanged
+
+        W_Commune.Liste_Adresse_BAN.DataGrid_adresse(ModeAdresse.Checked)
+
+    End Sub
+    Public Sub BAN_apply_filter()
+        If ListBoxnomvoie.SelectedIndex < 0 Then
+            ListBoxnomvoie.SelectedIndex = 0
+        End If
+
+        If ListBoxsourcenomvoie.SelectedIndex < 0 Then
+            ListBoxsourcenomvoie.SelectedIndex = 0
+        End If
+
+        If ListBoxsourceposition.SelectedIndex < 0 Then
+            ListBoxsourceposition.SelectedIndex = 0
+        End If
+
+        If ListBoxtypeposition.SelectedIndex < 0 Then
+            ListBoxtypeposition.SelectedIndex = 0
+        End If
+
+        Dim cert As String = "*"
+        If ListBoxCertifie.SelectedItem = "Oui" Then
+            cert = "1"
+        ElseIf ListBoxCertifie.SelectedItem = "Non" Then
+            cert = "0"
+        End If
+
+
+
+        W_Commune.Liste_Adresse_BAN.Apply_Filter(ListBoxnomvoie.SelectedItem,
+                                                 ListBoxsourcenomvoie.SelectedItem,
+                                                 ListBoxsourceposition.SelectedItem,
+                                                 ListBoxtypeposition.SelectedItem,
+                                                 cert, ListBoxRefcad.SelectedItem)
+
+    End Sub
+
+    Private Sub ListBoxnomvoie_Click(sender As Object, e As EventArgs) Handles ListBoxnomvoie.Click
+
+        BAN_apply_filter()
+
+    End Sub
+
+    Private Sub ListBoxRefcad_Click(sender As Object, e As EventArgs) Handles ListBoxRefcad.Click
+        BAN_apply_filter()
+    End Sub
+
+    Private Sub ListBoxsourcenomvoie_Click(sender As Object, e As EventArgs) Handles ListBoxsourcenomvoie.Click
+        BAN_apply_filter()
+    End Sub
+
+    Private Sub ListBoxsourceposition_Click(sender As Object, e As EventArgs) Handles ListBoxsourceposition.Click
+        BAN_apply_filter()
+    End Sub
+
+    Private Sub ListBoxtypeposition_Click(sender As Object, e As EventArgs) Handles ListBoxtypeposition.Click
+        BAN_apply_filter()
+    End Sub
+
+    Private Sub ListBoxCertifie_Click(sender As Object, e As EventArgs) Handles ListBoxCertifie.Click
+        BAN_apply_filter()
+
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        If DataGridView1.SelectedRows.Count = 0 Then
+            Exit Sub
+        End If
+
+        Dim lcom As comliste = TryCast(DataGridView1.SelectedRows(0).DataBoundItem, comliste)
+        If lcom Is Nothing Then
+
+            Exit Sub
+        End If
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            lcom.Set_FC(OpenFileDialog1.FileName)
+            W_Commune = New commune(lcom)
+            W_Commune.Liste_Adresse_BAN.Set_DataGrid(DataGrid_BAN)
+            W_Commune.Liste_Voie_FANTOIR.Set_DataGrid(DataGrid_FANTOIR)
+            ListBoxnomvoie.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Nom_Voie
+            ListBoxsourcenomvoie.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Source_Nom
+            ListBoxsourceposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Source_Position
+            ListBoxtypeposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Type_Position
+
+            ListBoxnomvoie.SelectedIndex = 0
+            ListBoxsourcenomvoie.SelectedIndex = 0
+            ListBoxsourceposition.SelectedIndex = 0
+            ListBoxtypeposition.SelectedIndex = 0
+        End If
+    End Sub
+
+    Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
+        If SaveFileDialog1.ShowDialog = DialogResult.OK Then
+
+            Using sw As New System.IO.StreamWriter(SaveFileDialog1.FileName)
+                For Each p As Adresse_BAN In W_Commune.Liste_Adresse_BAN.Get_Liste
+                    sw.WriteLine(p.Csv_line)
+                Next
+            End Using
+
+        End If
+
+        MsgBox("enregistrement effectué", MsgBoxStyle.Information)
     End Sub
 End Class

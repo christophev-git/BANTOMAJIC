@@ -68,26 +68,29 @@
             m_libelle = value
         End Set
     End Property
+    Public Sub New(ad As Adresse_BAN, insee As String, nom As String)
+        m_codeinsee = insee
+        m_nom_commune = nom
+        m_refcad = ad.RefCad
+        m_numvoie = ad.Numero
+        m_indrep = ad.IndRep
+        m_nature = ""
+        m_libelle = ad.Nom_AFNOR
+    End Sub
 
-    Public Sub New(tab() As String)
-        m_codeinsee = W_Commune.Insee
-        m_nom_commune = W_Commune.Nom
-        If tab.GetUpperBound(0) <> 22 Then
-            If tab.GetUpperBound(0) = 4 Then
-                m_refcad = tab(0)
-                m_numvoie = tab(1)
-                m_indrep = tab(2)
-                m_nature = tab(3)
-                m_libelle = tab(4)
-            End If
+    Public Sub New(e As GF3A_ligne, refcad As String)
 
-        Else
-            m_refcad = tab(22)
-            m_numvoie = tab(2)
-            m_indrep = tab(3)
-            m_nature = ""
-            m_libelle = tab(18)
-        End If
+        With e
+
+            m_codeinsee = .CodeInsee
+            m_nom_commune = .Nom_Commune
+            m_refcad = refcad
+            m_numvoie = .NumVoie
+            m_indrep = .IndRep
+            m_nature = .Nature
+            m_libelle = .Libelle
+
+        End With
     End Sub
 
     Public Function SplitRefCad() As System.Collections.Generic.List(Of GF3A_ligne)
@@ -96,20 +99,50 @@
 
         For i = 0 To res.GetUpperBound(0)
 
-            Dim t(4) As String
-            t(0) = res(i)
-            t(1) = m_numvoie
-            t(2) = m_indrep
-            t(3) = m_nature
-            t(4) = m_libelle
-
-            Dim f As New GF3A_ligne(t)
+            Dim f As New GF3A_ligne(Me, res(i))
             mliste.Add(f)
 
         Next
 
         Return mliste
     End Function
+    Public Sub Affecte_Nature_libelle(Optional splitlocal As Boolean = False, Optional codemajic As Boolean = False)
 
+        Dim tr As New traduction(m_libelle, W_traducteur)
 
+        If splitlocal Then
+            m_libelle = tr.Translated
+        Else
+            If tr.Dic_Trad.Locale = tr.Dic_Trad.Normale Then
+                m_libelle = tr.Translated
+            Else
+                m_libelle = tr.To_Translate
+            End If
+        End If
+
+        If codemajic Then
+            m_nature = tr.Dic_Trad.CodeMAJIC
+        Else
+            If splitlocal Then
+                m_nature = tr.Dic_Trad.Locale
+            Else
+                m_nature = tr.Dic_Trad.Normale
+            End If
+        End If
+
+    End Sub
+    Public Function Datagrid_view(d As DataGridView) As Boolean
+        With d
+            .Columns("CodeInsee").DisplayIndex = 0
+            .Columns("Nom_Commune").DisplayIndex = 1
+            .Columns("RefCad").DisplayIndex = 2
+            .Columns("NumVoie").DisplayIndex = 3
+            .Columns("IndRep").DisplayIndex = 4
+            .Columns("Nature").DisplayIndex = 5
+            .Columns("Libelle").DisplayIndex = 6
+            .AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells)
+        End With
+        Return True
+
+    End Function
 End Class
