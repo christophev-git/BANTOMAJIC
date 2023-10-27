@@ -60,25 +60,46 @@ Namespace My
 
             End If
 
+            Dim fich_fant_nat As String = ""
             If My.Settings.fantoir = "" Then
-                MsgBox("désignez le fichier FANTOIR du département", MsgBoxStyle.Information
+                MsgBox("désignez le fichier FANTOIR NATIONAL", MsgBoxStyle.Information
                    )
+
                 Dim f As New OpenFileDialog()
                 If f.ShowDialog = DialogResult.OK Then
-                    fichier_fantoir = f.FileName
+                    fich_fant_nat = f.FileName
 
-                    My.Settings.fantoir = fichier_fantoir
+
                 Else
                     MsgBox("impossible de travailler", MsgBoxStyle.Critical)
                     Exit Sub
                 End If
             Else
-                fichier_fantoir = My.Settings.fantoir
+
+                fich_fant_nat = My.Settings.fantoir
             End If
             My.Settings.Save()
 
-            Dim codedep As String = InputBox("Code département ?")
+
+            Dim codedep As String = InputBox("departement ?")
+            Dim sr As New System.IO.StreamReader(fich_fant_nat)
+            Dim sw As New System.IO.StreamWriter(fich_fant_nat & "_" & codedep)
+
+            Dim l As String
+
+            Do While Not sr.EndOfStream
+                l = sr.ReadLine
+                If l.Length = 88 And l.Substring(0, 2) = codedep Then
+                    sw.WriteLine(l)
+
+                End If
+            Loop
+            sr.Close()
+            sw.Close()
+            fichier_fantoir = fich_fant_nat & "_" & codedep
             If codedep <> "" And codedep.Length = 2 Then
+
+                My.Settings.Save()
                 listeCommune = New Liste_ComList(fichier_fantoir, Form1.DataGridView1, codedep
                                                  )
             Else

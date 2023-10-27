@@ -15,7 +15,7 @@
             Do While Not sr.EndOfStream
                 Dim l As String = sr.ReadLine
 
-                If l.Length >= 112 Then
+                If l.Length >= 112 And l.Substring(0, 2) = My.Settings.departement Then
 
                     If l.Substring(0, 2) & l.Substring(3, 3) = code_insee Then
                         Dim v As New Voie_Fantoir(l)
