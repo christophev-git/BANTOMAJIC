@@ -230,9 +230,9 @@
                     sw.WriteLine(p.Csv_line)
                 Next
             End Using
-
+            MsgBox("enregistrement effectué", MsgBoxStyle.Information)
         End If
 
-        MsgBox("enregistrement effectué", MsgBoxStyle.Information)
+
     End Sub
 End Class

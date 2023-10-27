@@ -70,14 +70,21 @@ Namespace My
                     My.Settings.fantoir = fichier_fantoir
                 Else
                     MsgBox("impossible de travailler", MsgBoxStyle.Critical)
-
+                    Exit Sub
                 End If
             Else
                 fichier_fantoir = My.Settings.fantoir
             End If
             My.Settings.Save()
 
-            listeCommune = New Liste_ComList(fichier_fantoir, Form1.DataGridView1)
+            Dim codedep As String = InputBox("Code département ?")
+            If codedep <> "" And codedep.Length = 2 Then
+                listeCommune = New Liste_ComList(fichier_fantoir, Form1.DataGridView1, codedep
+                                                 )
+            Else
+                Exit Sub
+            End If
+
 
         End Sub
     End Class

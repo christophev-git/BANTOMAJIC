@@ -2,14 +2,14 @@
 Public Class Liste_ComList
     Private m_liste_com As List(Of comliste)
     Private m_datagrid As DataGridView
-    Public Sub New(fich_fantoir As String, datagrid As DataGridView)
+    Public Sub New(fich_fantoir As String, datagrid As DataGridView, codedep As String)
         m_liste_com = New List(Of comliste)
         Using sr As New System.IO.StreamReader(fich_fantoir)
-            sr.ReadLine()
+
             Dim l As String
             Do While Not sr.EndOfStream
                 l = sr.ReadLine
-                If l.Length = 88 Then
+                If l.Length = 88 And l.Substring(0, 2) = codedep Then
                     Dim c As New comliste(l)
                     m_liste_com.Add(c)
 
