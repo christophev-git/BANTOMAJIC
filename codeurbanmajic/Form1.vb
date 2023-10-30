@@ -6,10 +6,7 @@
 
 
     Private Sub Form1_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
-        Label1.Text = "BAN Départementale : " & fichier_ban_dep
 
-        Label3.Text = "Fichier de traduction : " & fichier_traduction
-        Label4.Text = "Fichier FANTOIR : " & fichier_fantoir
 
 
     End Sub
@@ -58,6 +55,8 @@
         ListBoxsourcenomvoie.SelectedIndex = 0
         ListBoxsourceposition.SelectedIndex = 0
         ListBoxtypeposition.SelectedIndex = 0
+
+        Label3.Text = W_Commune.Liste_Adresse_BAN.Count & " au total"
     End Sub
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         SaveFileDialog1.FileName = "BANTOMAJIC_" & W_Commune.Insee
@@ -65,9 +64,9 @@
             Using wr As New System.IO.StreamWriter(SaveFileDialog1.FileName)
                 wr.WriteLine("CODE INSEE;NOMCOMM;REFCADPARC;NUMVOIE;INDREP;NATURE;LIBELLE")
                 For Each p As GF3A_ligne In W_Commune.Liste_Adresse_BAN.To_GF3A(False, True)
-                    Dim s As String = p.CodeInsee & ";" & p.Nom_Commune & ";" _
-& p.RefCad & ";" & p.NumVoie & ";" _
-& p.IndRep & ";" & p.Nature & ";" & p.Libelle
+                    Dim s As String = p.CodeInsee & ";" & p.Nom_Commune.PadRight(30) & ";" _
+& p.RefCad.PadRight(14) & ";" & p.NumVoie.PadRight(4) & ";" _
+& p.IndRep.PadRight(3) & ";" & p.Nature.PadRight(4) & ";" & p.Libelle.PadRight(26)
                     wr.WriteLine(s)
                 Next
             End Using
@@ -78,15 +77,7 @@
 
 
 
-    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        MsgBox("L'application se terminera vous devrez redémarrer", MsgBoxStyle.Critical)
-        My.Settings.fantoir = ""
-        My.Settings.basedep = ""
-        My.Settings.traducteur = ""
 
-        My.Settings.Save()
-        Me.Close()
-    End Sub
 
 
 
@@ -164,6 +155,8 @@
                                                  ListBoxsourceposition.SelectedItem,
                                                  ListBoxtypeposition.SelectedItem,
                                                  cert, ListBoxRefcad.SelectedItem)
+        Label3.Text = W_Commune.Liste_Adresse_BAN.Count_Filtered & " adresses sur " &
+        W_Commune.Liste_Adresse_BAN.Count & " adresses au total"
 
     End Sub
 
@@ -219,6 +212,7 @@
             ListBoxsourcenomvoie.SelectedIndex = 0
             ListBoxsourceposition.SelectedIndex = 0
             ListBoxtypeposition.SelectedIndex = 0
+            Label3.Text = W_Commune.Liste_Adresse_BAN.Count & " au total"
         End If
     End Sub
 
@@ -234,5 +228,59 @@
         End If
 
 
+    End Sub
+
+    Private Sub DépartementToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DépartementToolStripMenuItem.Click
+        Dim fich_fant_nat As String = My.Settings.fantoir
+        Dim codedep As String = InputBox("departement ?").ToUpper
+        Dim sr As New System.IO.StreamReader(fich_fant_nat)
+        Dim sw As New System.IO.StreamWriter(fich_fant_nat & "_" & codedep)
+
+        Dim l As String
+
+        Do While Not sr.EndOfStream
+            l = sr.ReadLine
+            If l.Length = 88 And l.Substring(0, 2) = codedep Then
+
+                sw.WriteLine(l)
+
+            End If
+            If l.Length = 120 And l.Substring(0, 2) = codedep Then
+                sw.WriteLine(l)
+
+            End If
+        Loop
+        sr.Close()
+        sw.Close()
+        fichier_fantoir = fich_fant_nat & "_" & codedep
+        If codedep <> "" And codedep.Length = 2 Then
+            My.Settings.departement = codedep
+            My.Settings.Save()
+            listeCommune = New Liste_ComList(fichier_fantoir, DataGridView1, codedep
+                                             )
+        Else
+            Exit Sub
+        End If
+        MsgBox("désignez le fichier ban du département", MsgBoxStyle.Information
+                   )
+        Dim f As New OpenFileDialog()
+        If f.ShowDialog = DialogResult.OK Then
+            fichier_ban_dep = f.FileName
+
+            My.Settings.basedep = fichier_ban_dep
+        Else
+            MsgBox("impossible de travailler", MsgBoxStyle.Critical)
+
+        End If
+    End Sub
+
+    Private Sub RéinitialiserFANTOIRToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles RéinitialiserFANTOIRToolStripMenuItem.Click
+        MsgBox("L'application se terminera vous devrez redémarrer", MsgBoxStyle.Critical)
+        My.Settings.fantoir = ""
+        My.Settings.basedep = ""
+        My.Settings.traducteur = ""
+
+        My.Settings.Save()
+        Me.Close()
     End Sub
 End Class

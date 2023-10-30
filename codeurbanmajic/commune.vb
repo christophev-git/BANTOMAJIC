@@ -61,6 +61,7 @@
             m_liste_adresse_ban = New Liste_BAN(coml.NomFich, m_insee, m_nom)
         End If
         m_voie_fantoir = New Liste_FANTOIR(fichier_fantoir, m_insee)
+
     End Sub
 
 End Class

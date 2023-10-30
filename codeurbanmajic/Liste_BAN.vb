@@ -198,6 +198,13 @@ Public Class Liste_BAN
     Public Sub add(v As Adresse_BAN)
         m_liste_ban.Add(v)
     End Sub
+    Public Function Count() As Integer
+
+        Return m_liste_ban.Count
+    End Function
+    Public Function Count_Filtered() As Integer
+        Return m_filtered.Count
+    End Function
     Public Function To_GF3A(Optional splitlocal As Boolean = False,
                             Optional codemajic As Boolean = False) As System.Collections.Generic.List(Of GF3A_ligne)
 

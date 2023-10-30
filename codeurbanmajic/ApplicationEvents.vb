@@ -26,17 +26,7 @@ Namespace My
     Partial Friend Class MyApplication
         Private Sub MyApplication_StartUp(sender As Object, e As StartupEventArgs) Handles Me.Startup
             If My.Settings.basedep = "" Then
-                MsgBox("désignez le fichier ban du département", MsgBoxStyle.Information
-                   )
-                Dim f As New OpenFileDialog()
-                If f.ShowDialog = DialogResult.OK Then
-                    fichier_ban_dep = f.FileName
 
-                    My.Settings.basedep = fichier_ban_dep
-                Else
-                    MsgBox("impossible de travailler", MsgBoxStyle.Critical)
-
-                End If
             Else
                 fichier_ban_dep = My.Settings.basedep
             End If
@@ -50,6 +40,7 @@ Namespace My
                     fichier_traduction = f.FileName
 
                     My.Settings.traducteur = fichier_traduction
+                    W_traducteur = New traducteur(fichier_traduction)
                 Else
                     MsgBox("impossible de travailler", MsgBoxStyle.Critical)
 
@@ -68,7 +59,7 @@ Namespace My
                 Dim f As New OpenFileDialog()
                 If f.ShowDialog = DialogResult.OK Then
                     fich_fant_nat = f.FileName
-
+                    My.Settings.fantoir = f.FileName
 
                 Else
                     MsgBox("impossible de travailler", MsgBoxStyle.Critical)
@@ -81,30 +72,7 @@ Namespace My
             My.Settings.Save()
 
 
-            Dim codedep As String = InputBox("departement ?")
-            Dim sr As New System.IO.StreamReader(fich_fant_nat)
-            Dim sw As New System.IO.StreamWriter(fich_fant_nat & "_" & codedep)
 
-            Dim l As String
-
-            Do While Not sr.EndOfStream
-                l = sr.ReadLine
-                If l.Length = 88 And l.Substring(0, 2) = codedep Then
-                    sw.WriteLine(l)
-
-                End If
-            Loop
-            sr.Close()
-            sw.Close()
-            fichier_fantoir = fich_fant_nat & "_" & codedep
-            If codedep <> "" And codedep.Length = 2 Then
-
-                My.Settings.Save()
-                listeCommune = New Liste_ComList(fichier_fantoir, Form1.DataGridView1, codedep
-                                                 )
-            Else
-                Exit Sub
-            End If
 
 
         End Sub
