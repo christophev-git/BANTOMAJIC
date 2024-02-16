@@ -20,7 +20,13 @@ Public Class Liste_BAN
         m_nom = nomcommune
         If notfill Then Exit Sub
 
-        Using sr As New System.IO.StreamReader(fichier_ban_dep)
+        Dim s As String = ""
+        If fichier_b = "" Then
+            s = fichier_ban_dep
+        Else
+            s = fichier_b
+        End If
+        Using sr As New System.IO.StreamReader(s)
 
             sr.ReadLine()
 

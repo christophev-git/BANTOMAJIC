@@ -64,9 +64,9 @@
             Using wr As New System.IO.StreamWriter(SaveFileDialog1.FileName)
                 wr.WriteLine("CODE INSEE;NOMCOMM;REFCADPARC;NUMVOIE;INDREP;NATURE;LIBELLE")
                 For Each p As GF3A_ligne In W_Commune.Liste_Adresse_BAN.To_GF3A(False, True)
-                    Dim s As String = p.CodeInsee & ";" & p.Nom_Commune.PadRight(30) & ";" _
-& p.RefCad.PadRight(14) & ";" & p.NumVoie.PadRight(4) & ";" _
-& p.IndRep.PadRight(3) & ";" & p.Nature.PadRight(4) & ";" & p.Libelle.PadRight(26)
+                    Dim s As String = p.CodeInsee & ";" & p.Nom_Commune & ";" _
+& p.RefCad & ";" & p.NumVoie & ";" _
+& p.IndRep & ";" & p.Nature & ";" & p.Libelle
                     wr.WriteLine(s)
                 Next
             End Using
@@ -208,7 +208,7 @@
             ListBoxsourceposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Source_Position
             ListBoxtypeposition.DataSource = W_Commune.Liste_Adresse_BAN.Get_Liste_Type_Position
 
-            ListBoxnomvoie.SelectedIndex = 0
+            ListBoxnomvoie.SelectedIndex = -1
             ListBoxsourcenomvoie.SelectedIndex = 0
             ListBoxsourceposition.SelectedIndex = 0
             ListBoxtypeposition.SelectedIndex = 0
@@ -282,5 +282,9 @@
 
         My.Settings.Save()
         Me.Close()
+    End Sub
+
+    Private Sub DataGridView1_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles DataGridView1.CellContentClick
+
     End Sub
 End Class
